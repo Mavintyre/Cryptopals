@@ -1,10 +1,9 @@
 package main
 
 import (
-	"encoding/base64"
+	"Cryptopals/Breaker"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -18,45 +17,13 @@ func main() {
 	//generateArray()
 }
 
-func getBestScoreAndKey(s string) (string, string, float64) {
+func c3() {
+	s := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+	b := Breaker.NewBreakerHex(s)
+	results := b.BreakIt()
+	r := results.GetBestFrequencyScore()
+	fmt.Println(r)
 
-	decoded, err := hex.DecodeString(s)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//fmt.Println(decoded)
-	bestResult := ""
-	bestScore := 0.00
-	bestKey := ""
-	key := []byte{0}
-	for j := 32; j < 96; j++ {
-		key[0] = byte(j)
-		result := xor(decoded, key)
-		resultString := string(result)
-		resultScore := score(result)
-		resultKey := string(key)
-		if resultScore > bestScore {
-			bestScore = resultScore
-			bestResult = resultString
-			bestKey = resultKey
-		}
-
-	}
-
-	return bestResult, bestKey, bestScore
-}
-
-func score(b []byte) float64 {
-	score := 0.00
-	for _, v := range b {
-		if v < 32 {
-			score -= 100
-		}
-		currentLetter := string(v)
-		score += m[currentLetter]
-	}
-	return score
 }
 
 func xor(b1, b2 []byte) []byte {
@@ -76,11 +43,13 @@ func c4() {
 	currentBestKey := ""
 	currentBestScore := 0.00
 	for _, s := range entries {
-		currentResult, currentKey, currentScore := getBestScoreAndKey(s)
-		if currentScore > currentBestScore {
-			currentBestResult = currentResult
-			currentBestKey = currentKey
-			currentBestScore = currentScore
+		b := Breaker.NewBreakerHex(s)
+		results := b.BreakIt()
+		score := results.GetBestFrequencyScore()
+		if score.BestScore > currentBestScore {
+			currentBestResult = score.BestResult
+			currentBestKey = score.BestKey
+			currentBestScore = score.BestScore
 		}
 
 	}
@@ -102,21 +71,19 @@ I go crazy when I hear a cymbal`)
 }
 
 func c6() {
-	b64String := "HUIfTQsPAh9PE048GmllH0kcDk4TAQsHThsBFkU2AB4BSWQgVB0dQzNTTmVS\nBgBHVBwNRU0HBAxTEjwMHghJGgkRTxRMIRpHKwAFHUdZEQQJAGQmB1MANxYG"
-	decodedString, _ := base64.StdEncoding.DecodeString(b64String)
-	bestHamming := 1000
-	bestHammingKeysize := 0
-	for i := 2; i < 40; i++ {
-		s1 := decodedString[0:i]
-		s2 := decodedString[i:(2 * i)]
-		currentHamming := hamming(string(s1), string(s2))
-		currentHamming /= i
-		if currentHamming < bestHamming {
-			bestHamming = currentHamming
-			bestHammingKeysize = i
-		}
+	b64String := "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"
+	ham := NewHammingBase64(b64String)
+	keySize := ham.GetBestKeySize(54, 60)
+	pivot := ham.Pivot(keySize)
+	suspectedKey := []byte{}
+	for _, v := range pivot {
+		b := Breaker.NewBreakerByte(v)
+		r := b.BreakIt()
+		s := r.GetBestFrequencyScore()
+		suspectedKey = append(suspectedKey, s.BestKeyBytes[0])
 	}
-	println(bestHamming, bestHammingKeysize)
+	fmt.Println(string(suspectedKey))
+	fmt.Println(string(xor(ham.InputBytes, suspectedKey)))
 }
 
 func generateArray() {
@@ -134,93 +101,4 @@ func countBits(x uint8) int {
 		x = x << 1
 	}
 	return count
-}
-
-func hamming(s1, s2 string) int {
-	s1bits := []uint8(s1)
-	s2bits := []uint8(s2)
-	xoroutput := xor(s1bits, s2bits)
-	count := 0
-	for _, i := range xoroutput {
-		count += lookupBits(i)
-	}
-
-	return count
-}
-
-func lookupBits(x uint8) int {
-	count := 0
-	count += answerKey[x]
-	return count
-}
-
-var answerKey = [256]int{0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8}
-var m = map[string]float64{
-	"E": 12.02,
-	"e": 12.02,
-	"T": 9.10,
-	"t": 9.10,
-	"A": 8.12,
-	"a": 8.12,
-	"O": 7.68,
-	"o": 7.68,
-	"I": 7.31,
-	"i": 7.31,
-	"N": 6.95,
-	"n": 6.95,
-	"S": 6.28,
-	"s": 6.28,
-	"R": 6.02,
-	"r": 6.02,
-	"H": 5.92,
-	"h": 5.92,
-	"D": 4.32,
-	"d": 4.32,
-	"L": 3.98,
-	"l": 3.98,
-	"U": 2.88,
-	"u": 2.88,
-	"C": 2.71,
-	"c": 2.71,
-	"M": 2.61,
-	"m": 2.61,
-	"F": 2.30,
-	"f": 2.30,
-	"Y": 2.11,
-	"y": 2.11,
-	"W": 2.09,
-	"w": 2.09,
-	"G": 2.03,
-	"g": 2.03,
-	"P": 1.82,
-	"p": 1.82,
-	"B": 1.49,
-	"b": 1.49,
-	"V": 1.11,
-	"v": 1.11,
-	"K": 0.69,
-	"k": 0.69,
-	"X": 0.17,
-	"x": 0.17,
-	"Q": 0.11,
-	"q": 0.11,
-	"J": 0.10,
-	"j": 0.10,
-	"Z": 0.07,
-	"z": 0.07,
-	" ": 1.00,
-	".": 1.00,
-	"'": 1.00,
-	"&": -10,
-	"$": -10,
-	"#": -10,
-	"@": -10,
-	"*": -10,
-	"(": -10,
-	")": -10,
-	"[": -10,
-	"]": -10,
-	"{": -10,
-	"}": -10,
-	"`": -10,
 }
